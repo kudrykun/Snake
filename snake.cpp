@@ -2,6 +2,7 @@
 
 #include <QVector>
 #include <QPair>
+#include <QDebug>
 
 Snake::Snake(int hx, int hy, int length, int direction)
 {
@@ -15,13 +16,13 @@ Snake::Snake(int hx, int hy, int length, int direction)
     int dy = 0;
     switch(direction){
     case 0:
-        dy = -1;
+        dy = 1;
         break;
     case 1:
         dx = 1;
         break;
     case 2:
-        dy = 1;
+        dy = -1;
         break;
     case 3:
         dx = -1;
@@ -34,7 +35,7 @@ Snake::Snake(int hx, int hy, int length, int direction)
     }
 }
 
-void Snake::move()
+void Snake::move(int direction)
 {
     // next head coordinates
     int next_x = this->get_head().first;
@@ -117,4 +118,5 @@ void Snake::add_cell()
         else
             snake->push_back(qMakePair(t1.first+1, t1.second));
     }
+    qDebug() << "OK CELL ADDED";
 }

@@ -8,7 +8,7 @@ class Snake
 {
 public:
     Snake(int hx,  int hy, int length = 2, int direction = 0);
-    void move();
+    void move(int direction);
     QPair<int, int> get_cell(int n);
     QPair<int, int> get_head();
     void set_cell(int x, int y, int n);
@@ -17,7 +17,6 @@ public:
     int length();
     void add_cell();
 private:
-    int direction; // 0 for up, 1 for right, 2 for down, 3 for left
     QVector<QPair<int,int>> *snake;
 };
 

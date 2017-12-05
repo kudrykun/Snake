@@ -4,65 +4,30 @@ Field::Field(int w, int h)
 {
     // 0 for empty space, 1 for food, 2 for snake cells
     field = new QVector<QVector<int>>(h, QVector<int>(w));
-
+    snake = new Snake(w/2,h/2);
 
 
     //populating field with empty space
     for(int i = 0; i < h; i++)
         for(int j = 0; j < w; j++){
-            (*field)[i][j] = 0;
+            set_cell(i,j,0);
         }
 
-    //place first food cell randomly
-    int food_x = qrand() % w;
-    int food_y = qrand() % h;
-    (*field)[food_y][food_x] = 1;
+    add_food();
 
     //place snake
-    snake = new QVector<QPair<int,int>>();
-    snake->push_back(qMakePair(5,5));
-    snake->push_back(qMakePair(5,6));
-    snake->push_back(qMakePair(5,7));
-    qDebug() << (*snake)[0];
-    (*field)[(*snake)[0].second][(*snake)[0].first] = 2;
-    (*field)[(*snake)[1].second][(*snake)[1].first] = 2;
-    (*field)[(*snake)[2].second][(*snake)[2].first] = 2;
+    render_snake(snake);
 }
 
-int Field::get_item(int x, int y)
-{
-    return (*field)[y][x];
-}
-
-/*void Field::set_item(int x, int y, int v)
-{
-    (*field)
-}*/
-
-int Field::get_w()
-{
-    return (*field)[0].size();
-}
-
-int Field::get_h()
-{
-    return (*field).size();
-}
-
-void Field::set_direction(int dir)
-{
-    direction = dir;
-}
-
-bool Field::move()
+bool Field::update()
 {
 
     // next head coordinates
-    int next_x = (*snake)[0].first;
-    int next_y = (*snake)[0].second;
+    int next_x = snake->get_head().first;
+    int next_y = snake->get_head().second;
 
     //define this coordinates
-    switch(direction){
+    switch(next_direction){
     case 0:
         next_y--;
         break;
@@ -83,7 +48,7 @@ bool Field::move()
         return false;
     }
 
-    int next_value = this->get_item(next_x,next_y);
+    int next_value = this->get_cell(next_x,next_y);
 
     //if next cell is snake's cell - game over
     if(next_value == 2){
@@ -91,26 +56,73 @@ bool Field::move()
         return false;
     }
 
+
+
+    //updating field
+    snake->move(next_direction);
+
     //if next cell is food - ok
-    if(next_value == 1)
+    if(next_value == 1){
         score++;
-
-    //updating field
-    for(int i = snake->length()-1; i >= 0; i--){
-        (*field)[(*snake)[i].second][(*snake)[i].first] = 0;
+        snake->add_cell();
+        add_food();
     }
-
     //moving snake
-    for(int i = snake->length()-1; i >= 1; i--){
-        (*snake)[i].first = (*snake)[i-1].first;
-        (*snake)[i].second = (*snake)[i-1].second;
-    }
-    (*snake)[0].first = next_x;
-    (*snake)[0].second = next_y;
-
-    //updating field
-    for(int i = snake->length()-1; i >= 0; i--){
-        (*field)[(*snake)[i].second][(*snake)[i].first] = 2;
-    }
+    render_snake(snake);
     return true;
 }
+
+void Field::render_snake(Snake *s)
+{
+    for(int i = 0; i < get_h(); i++)
+        for(int j = 0; j < get_w(); j++)
+            if(get_cell(i,j) == 2)
+                set_cell(i,j,0);
+
+    for(int i = 0; i < s->length(); i++)
+        set_cell(s->get_cell(i).first,s->get_cell(i).second,2);
+}
+
+void Field::add_food(int count)
+{
+
+    for(int i = 0; i < count; i++){
+        int x = qrand() % get_w();
+        int y = qrand() % get_h();
+        while(get_cell(x,y) == 2 || get_cell(x,y) == 1){
+            x = qrand() % get_w();
+            y = qrand() % get_h();
+        }
+        this->set_cell(x,y,1);
+        qDebug() << "OK FOOD ADDED";
+    }
+
+}
+
+
+int Field::get_cell(int x, int y)
+{
+    return (*field)[y][x];
+}
+
+void Field::set_cell(int x, int y, int v)
+{
+    (*field)[y][x] = v;
+}
+
+int Field::get_w()
+{
+    return (*field)[0].size();
+}
+
+int Field::get_h()
+{
+    return (*field).size();
+}
+
+void Field::set_next_direction(int dir)
+{
+    next_direction = dir;
+}
+
+
