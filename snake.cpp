@@ -96,27 +96,8 @@ int Snake::length()
     return (*snake).size();
 }
 
-void Snake::add_cell()
-{
-    QPair<int,int> t1 = get_cell(length()-1);
-    QPair<int,int> t2 = get_cell(length()-2);
-
-    // now lets define how we will add new cell to our snake
-    if(t1.first - t2.first == 0){
-        //direction - up
-        if(t1.second - t2.second == 1)
-            snake->push_back(qMakePair(t1.first, t1.second+1));
-        //direction - down
-        else
-            snake->push_back(qMakePair(t1.first, t1.second-1));
-    }
-    else{
-        //direction - right
-        if(t1.first - t2.first == -1)
-            snake->push_back(qMakePair(t1.first-1, t1.second));
-        //direction - left
-        else
-            snake->push_back(qMakePair(t1.first+1, t1.second));
-    }
+void Snake::add_cell(int x, int y)
+{    
+    snake->push_back(qMakePair(x,y));
     qDebug() << "OK CELL ADDED";
 }

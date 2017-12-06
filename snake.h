@@ -1,9 +1,9 @@
 #ifndef SNAKE_H
 #define SNAKE_H
 
+
 #include <QObject>
 #include <QPair>
-
 class Snake
 {
 public:
@@ -14,8 +14,8 @@ public:
     void set_cell(int x, int y, int n);
     void set_cell(QPair<int,int>, int n);
     void set_head(int x, int y);
+    void add_cell(int x, int y);
     int length();
-    void add_cell();
 private:
     QVector<QPair<int,int>> *snake;
 };

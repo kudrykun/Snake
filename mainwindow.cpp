@@ -12,13 +12,11 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+
     ui->setupUi(this);
-
-
-    field = new Field(10,10);
-
-
-
+    field = new Field(10,10); // setup field size TODO not only square field
+    QGraphicsScene *scene = new QGraphicsScene(0,0,512,512);
+    ui->graphicsView->setScene(scene);
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(update()));
@@ -32,29 +30,50 @@ MainWindow::~MainWindow()
 
 void MainWindow::paintEvent(QPaintEvent *event)
 {
-    field->update();
-    int scene_size = 384;
-    int cell_size = scene_size / field->get_h();
-    ui->graphicsView->resize(512,512);
+    //debug field output
+    {
+        for(int i = 0; i < field->get_h(); i++){
+            QString str = "";
+            for(int j = 0; j < field->get_w(); j++){
+                str.append(QString::number(field->get_cell(i,j)));
+            }
+            qDebug() << str;
+        }
+        qDebug() << '\n';
+    }
 
-    QGraphicsScene *scene = new QGraphicsScene(0,0,scene_size,scene_size);
+    field->update();// moving snake, spreading food...
+    ui->scores->display(field->get_score()); // displaying scores
+    ui->graphicsView->scene()->clear();
+
+    int scene_size = 384; // setting scene size
+    int cell_size = scene_size / field->get_h(); // calculating cells size
+
 
     QPen mapPen(Qt::black);
+    ui->graphicsView->scene()->addLine(0,0,field->get_w() * cell_size,0,mapPen);//top
+    ui->graphicsView->scene()->addLine(0,field->get_h() * cell_size+2,field->get_w() * cell_size+2,field->get_h() * cell_size+2,mapPen); //bottom
+    ui->graphicsView->scene()->addLine(field->get_w() * cell_size+2,0,field->get_w() * cell_size+2,field->get_h() * cell_size+2, mapPen); //right
+    ui->graphicsView->scene()->addLine(0,0,0,field->get_h() * cell_size+2,mapPen);
+
+    /*QPen mapPen(Qt::black);
     for(int i = 0; i <= scene->width(); i+= cell_size){
         scene->addLine(i,0,i,scene->height(),mapPen);
     }
     for(int i = 0; i <= scene->height(); i+= cell_size){
         scene->addLine(0,i,scene->width(),i,mapPen);
-    }
+    }*/
+    QPen cellsPen(Qt::white);
     for(int i = 0; i < field->get_h(); i++){
         for(int j = 0; j < field->get_w(); j++){
             int curr_cell = field->get_cell(i,j);
             QGraphicsRectItem *r1 = new QGraphicsRectItem();
+            r1->setPen(cellsPen);
             r1->setRect(i * cell_size + 2,j * cell_size + 2,cell_size - 2, cell_size - 2);
             switch(curr_cell){
-            case 0:
+            /*case 0:
                 r1->setBrush(Qt::gray);
-                break;
+                break;*/
             case 1:
                 r1->setBrush(Qt::red);
                 break;
@@ -63,10 +82,10 @@ void MainWindow::paintEvent(QPaintEvent *event)
                 break;
             }
 
-            scene->addItem(r1);
+            ui->graphicsView->scene()->addItem(r1);
         }
     }
-    ui->graphicsView->setScene(scene);
+
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)

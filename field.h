@@ -19,6 +19,9 @@ public:
     bool update();
     void render_snake(Snake *s);
     void add_food(int count = 1);
+    int get_score();
+    void increase_snake();
+    bool is_valid(int x, int y);
 private:
     QVector<QVector<int>> *field;
     int next_direction = 0;// 0 for up, 1 for right, 2 for down, 3 for left

@@ -44,7 +44,7 @@ bool Field::update()
 
     // checking for crossing borders
     if(next_x >= this->get_w() || next_y >= this->get_h() || next_x < 0 || next_y < 0){
-        qDebug() << "BORDERS" << " x = " << next_x << " y = " << next_y;
+        qDebug() << "BORDER COLLISION at" << " x = " << next_x << " y = " << next_y;
         return false;
     }
 
@@ -52,7 +52,7 @@ bool Field::update()
 
     //if next cell is snake's cell - game over
     if(next_value == 2){
-        qDebug() << "CEll TWO" << " x = " << next_x << " y = " << next_y;;
+        qDebug() << "SELF COLLISION at" << " x = " << next_x << " y = " << next_y;;
         return false;
     }
 
@@ -64,7 +64,7 @@ bool Field::update()
     //if next cell is food - ok
     if(next_value == 1){
         score++;
-        snake->add_cell();
+        increase_snake();
         add_food();
     }
     //moving snake
@@ -74,6 +74,11 @@ bool Field::update()
 
 void Field::render_snake(Snake *s)
 {
+    qDebug() << "... START SNAKE RENDERING";
+    QString str = "";
+    for(int i = 0; i < s->length(); i++)
+        str.append("[" + QString::number(s->get_cell(i).first) + ", " + QString::number(s->get_cell(i).second) + "] ");
+    qDebug() << "... SNAKE COORDS " << str;
     for(int i = 0; i < get_h(); i++)
         for(int j = 0; j < get_w(); j++)
             if(get_cell(i,j) == 2)
@@ -81,6 +86,7 @@ void Field::render_snake(Snake *s)
 
     for(int i = 0; i < s->length(); i++)
         set_cell(s->get_cell(i).first,s->get_cell(i).second,2);
+    qDebug() << "OK SNAKE RENDERED";
 }
 
 void Field::add_food(int count)
@@ -97,6 +103,71 @@ void Field::add_food(int count)
         qDebug() << "OK FOOD ADDED";
     }
 
+}
+
+int Field::get_score()
+{
+    return score;
+}
+
+void Field::increase_snake()
+{
+    QPair<int,int> t1 = snake->get_cell(snake->length()-1);
+    QPair<int,int> t2 = snake->get_cell(snake->length()-2);
+    int nx = t1.first;
+    int ny = t1.second;
+
+    // now lets coords of added cell if cell behind current tail if empty
+    if(t1.first - t2.first == 0){
+        //direction - up
+        if(t1.second - t2.second == 1)
+            ny++;
+        //direction - down
+        else
+            ny--;
+    }
+    else{
+        //direction - right
+        if(t1.first - t2.first == -1)
+            nx--;
+        //direction - left
+        else
+            nx++;
+    }
+
+    // NOT WORKING PROPERLY
+    if(!is_valid(nx,ny)){
+        if(is_valid(t1.first-1,t1.second)){
+            nx = t1.first-1;
+            ny = t1.second;
+        }
+        if(is_valid(t1.first,t1.second-1)){
+            nx = t1.first;
+            ny = t1.second-1;
+        }
+        if(is_valid(t1.first+1,t1.second)) {
+            nx = t1.first+1;
+            ny = t1.second;
+        }
+        if(is_valid(t1.first,t1.second+1)){
+            nx = t1.first;
+            ny = t1.second+1;
+        }
+    }
+
+
+    snake->add_cell(nx,ny);
+}
+
+bool Field::is_valid(int x, int y)
+{
+    if(x < 0 || y < 0 || x >= get_w() || y >= get_h())
+        return false;
+
+    int v = get_cell(x,y);
+    if(v == 2)
+        return false;
+    return true;
 }
 
 
@@ -122,7 +193,8 @@ int Field::get_h()
 
 void Field::set_next_direction(int dir)
 {
-    next_direction = dir;
+    if(qAbs(next_direction - dir) != 2)
+        next_direction = dir;
 }
 
 
